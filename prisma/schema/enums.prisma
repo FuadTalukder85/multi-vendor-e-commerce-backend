@@ -9,4 +9,6 @@ enum UserStatus {
   ACTIVE
   BLOCKED
   DELETED
+  SUSPENDED
+  BANNED
 }
