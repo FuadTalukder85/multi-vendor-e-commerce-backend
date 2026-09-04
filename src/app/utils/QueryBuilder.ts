@@ -120,8 +120,7 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
         return;
       }
 
-      const isAllowedField =
-        !filterableFields || filterableFields.length === 0 || filterableFields.includes(key);
+      const isAllowedField = !filterableFields || filterableFields.length === 0 || filterableFields.includes(key);
 
       if (key.includes(".")) {
         const parts = key.split(".");

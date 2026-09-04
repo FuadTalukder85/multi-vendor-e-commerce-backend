@@ -1,11 +1,10 @@
 import { Router } from "express";
+import { AddressRoutes } from "../modules/address/address.route";
+import { UserRoutes } from "../modules/user/user.route";
 
 const router = Router();
 
-// Future module routes will be registered here
-// Example:
-// router.use("/auth", AuthRoutes);
-// router.use("/users", UserRoutes);
-// router.use("/products", ProductRoutes);
+router.use("/users", UserRoutes);
+router.use("/addresses", AddressRoutes);
 
 export const IndexRoutes = router;

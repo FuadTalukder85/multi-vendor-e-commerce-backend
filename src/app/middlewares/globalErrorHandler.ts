@@ -32,12 +32,12 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
 
   // Clean up uploaded files on error
   if (req.file) {
-    await deleteFileFromCloudinary(req.file.path).catch(() => { });
+    await deleteFileFromCloudinary(req.file.path).catch(() => {});
   }
 
   if (req.files && Array.isArray(req.files) && req.files.length > 0) {
     const imageUrls = req.files.map((file) => file.path);
-    await Promise.all(imageUrls.map((url) => deleteFileFromCloudinary(url).catch(() => { })));
+    await Promise.all(imageUrls.map((url) => deleteFileFromCloudinary(url).catch(() => {})));
   }
 
   let errorSources: TErrorSources[] = [];
