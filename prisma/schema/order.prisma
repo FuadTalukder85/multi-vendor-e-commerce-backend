@@ -49,7 +49,8 @@ model SubOrder {
 
   order   Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   vendor  VendorProfile @relation(fields: [vendorId], references: [id])
-  items   OrderItem[]
+  items       OrderItem[]
+  payoutLinks PayoutSubOrder[]
 
   @@index([vendorId, status])
   @@index([orderId])

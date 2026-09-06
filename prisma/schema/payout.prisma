@@ -1,0 +1,31 @@
+model Payout {
+  id               String       @id @default(cuid())
+  vendorId         String
+  amount           Decimal      @db.Decimal(10, 2)
+  status           PayoutStatus @default(UNPAID)
+  stripeTransferId String?
+  processedAt      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  vendor    VendorProfile    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  subOrders PayoutSubOrder[]
+
+  @@index([vendorId, status])
+  @@map("payouts")
+}
+
+// explicit join table (Payout <-> SubOrder, many-to-many)
+model PayoutSubOrder {
+  payoutId   String
+  subOrderId String
+  createdAt  DateTime @default(now())
+
+  payout   Payout   @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+  subOrder SubOrder @relation(fields: [subOrderId], references: [id], onDelete: Cascade)
+
+  @@id([payoutId, subOrderId])
+  @@index([payoutId])
+  @@index([subOrderId])
+  @@map("payout_sub_orders")
+}

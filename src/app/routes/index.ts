@@ -4,6 +4,8 @@ import { CategoryRoutes } from "../modules/category/category.route";
 import { CouponRoutes } from "../modules/coupon/coupon.route";
 import { CouponUsageLogRoutes } from "../modules/couponUsageLog/couponUsageLog.route";
 import { OrderRoutes } from "../modules/order/order.route";
+import { PayoutRoutes } from "../modules/payout/payout.route";
+import { PayoutSubOrderRoutes } from "../modules/payoutSubOrder/payoutSubOrder.route";
 import { ProductRoutes } from "../modules/product/product.route";
 import { ProductVariantRoutes } from "../modules/productVariant/productVariant.route";
 import { RbacRoutes } from "../modules/rbac/rbac.route";
@@ -24,6 +26,8 @@ router.use("/coupons", CouponRoutes);
 router.use("/coupon-usage-logs", CouponUsageLogRoutes);
 router.use("/orders", OrderRoutes);
 router.use("/sub-orders", SubOrderRoutes);
+router.use("/payouts", PayoutRoutes);
+router.use("/payout-sub-orders", PayoutSubOrderRoutes);
 router.use("/wishlists", WishlistRoutes);
 router.use("/rbac", RbacRoutes);
 
