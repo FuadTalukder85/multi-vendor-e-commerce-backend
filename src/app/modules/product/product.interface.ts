@@ -32,6 +32,7 @@ export interface IUpdateProductPayload {
   discountPrice?: number | null;
   totalStock?: number;
   tags?: string[];
+  status?: ProductStatus;
 }
 
 export interface IUpdateProductStatusPayload {

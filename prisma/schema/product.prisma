@@ -20,10 +20,11 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  vendor   VendorProfile    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  category Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  variants ProductVariant[]
-  wishlists Wishlist[]
+  vendor     VendorProfile    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  category   Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants   ProductVariant[]
+  wishlists  Wishlist[]
+  orderItems OrderItem[]
 
   @@index([vendorId, status])
   @@index([categoryId])
@@ -39,7 +40,8 @@ model ProductVariant {
   stock      Int     @default(0)
   image      String?
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
 
   @@index([productId])
   @@map("product_variants")

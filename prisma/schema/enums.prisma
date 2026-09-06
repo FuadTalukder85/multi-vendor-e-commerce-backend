@@ -32,3 +32,26 @@ enum ModuleScope {
   VENDOR
   BOTH
 }
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum SubOrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PayoutStatus {
+  UNPAID
+  PROCESSING
+  PAID
+  FAILED
+}
