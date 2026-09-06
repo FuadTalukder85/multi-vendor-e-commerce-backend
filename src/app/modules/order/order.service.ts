@@ -14,6 +14,8 @@ import { IRequestUser } from "../../types/request.types";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { orderFilterableFields, orderSearchableFields, standardOrderInclude } from "./order.constant";
 import { ICreateOrderPayload, IUpdatePaymentStatusPayload } from "./order.interface";
+import { CouponService } from "../coupon/coupon.service";
+import { CouponUsageLogService } from "../couponUsageLog/couponUsageLog.service";
 
 const generateOrderNumber = (): string => {
   const timestamp = Date.now().toString(36).toUpperCase();
@@ -168,9 +170,33 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
     });
   }
 
+  // Validate and calculate coupon discount if provided
+  let couponDiscount = 0;
+  let appliedCouponCode: string | null = null;
+
+  if (payload.couponCode) {
+    const couponValidation = await CouponService.validateAndApplyCoupon(
+      {
+        code: payload.couponCode,
+        items: processedItems.map((item) => ({
+          productId: item.productId,
+          vendorId: item.vendorId,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        subtotal: totalOrderAmount,
+      },
+      user.userId,
+    );
+
+    couponDiscount = couponValidation.discountAmount;
+    appliedCouponCode = couponValidation.coupon.code;
+    totalOrderAmount = Number(Math.max(0, totalOrderAmount - couponDiscount).toFixed(2));
+  }
+
   const orderNumber = generateOrderNumber();
 
-  // Execute database transaction: deduct inventory & create Order, SubOrders, OrderItems
+  // Execute database transaction: deduct inventory & create Order, SubOrders, OrderItems, CouponUsageLog
   return await prisma.$transaction(async (tx) => {
     // 1. Deduct stock
     for (const item of processedItems) {
@@ -207,7 +233,8 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
         paymentStatus: PaymentStatus.PENDING,
         paymentMethod: payload.paymentMethod ?? null,
         paymentIntentId: payload.paymentIntentId ?? null,
-        couponCode: payload.couponCode ?? null,
+        couponCode: appliedCouponCode,
+        couponDiscount: couponDiscount > 0 ? couponDiscount : null,
         subOrders: {
           create: vendorSubOrders.map((subOrder) => ({
             vendorId: subOrder.vendorId,
@@ -230,6 +257,19 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
       },
       include: standardOrderInclude,
     });
+
+    // 3. Record coupon usage log & atomically increment coupon usedCount
+    if (appliedCouponCode) {
+      await CouponUsageLogService.recordCouponUsage(
+        {
+          couponCode: appliedCouponCode,
+          userId: user.userId,
+          orderId: createdOrder.id,
+          discountAmount: couponDiscount,
+        },
+        tx,
+      );
+    }
 
     return createdOrder;
   });

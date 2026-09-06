@@ -1,0 +1,50 @@
+model Coupon {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  scope         String    // "platform" | "vendor"
+  vendorId      String?
+  discountType  String    // "percentage" | "flat"
+  discountValue Decimal   @db.Decimal(10, 2)
+  minPurchase   Decimal?  @db.Decimal(10, 2)
+  expiresAt     DateTime?
+  usageLimit    Int?
+  usedCount     Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  vendor    VendorProfile?   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  usageLogs CouponUsageLog[]
+
+  @@index([vendorId])
+  @@index([code])
+  @@index([scope])
+  @@map("coupons")
+}
+
+model CouponUsageLog {
+  id                 String   @id @default(cuid())
+  couponCode         String
+  userId             String
+  orderId            String?
+  discountAmount     Decimal? @db.Decimal(10, 2)
+  deviceId           String?
+  ipAddress          String?
+  phone              String?
+  paymentFingerprint String?
+  deliveryAddress    String?
+  usedAt             DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  coupon Coupon @relation(fields: [couponCode], references: [code], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order  Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([couponCode])
+  @@index([userId])
+  @@index([orderId])
+  @@index([deviceId])
+  @@index([ipAddress])
+  @@map("coupon_usage_logs")
+}

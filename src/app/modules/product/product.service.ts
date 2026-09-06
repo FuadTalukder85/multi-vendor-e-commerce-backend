@@ -390,11 +390,7 @@ const deleteProduct = async (user: IRequestUser, id: string) => {
   });
 };
 
-const updateProductStatus = async (
-  user: IRequestUser,
-  id: string,
-  payload: IUpdateProductStatusPayload,
-) => {
+const updateProductStatus = async (user: IRequestUser, id: string, payload: IUpdateProductStatusPayload) => {
   const product = await prisma.product.findUnique({
     where: { id },
     include: { vendor: true },
@@ -405,9 +401,7 @@ const updateProductStatus = async (
   }
 
   const isAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
-  const isOwnerOrStaff =
-    product.vendor.userId === user.userId ||
-    (user.tenantId && product.vendorId === user.tenantId);
+  const isOwnerOrStaff = product.vendor.userId === user.userId || (user.tenantId && product.vendorId === user.tenantId);
 
   if (!isAdmin && !isOwnerOrStaff) {
     throw new AppError(status.FORBIDDEN, "You do not have permission to change status for this product");

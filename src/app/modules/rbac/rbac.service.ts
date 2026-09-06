@@ -161,10 +161,7 @@ const getAllRoles = async (userRole: Role, tenantId?: string | null) => {
   const where: Record<string, unknown> = { isActive: true };
 
   if (userRole === Role.VENDOR) {
-    where.OR = [
-      { scope: { in: [ModuleScope.VENDOR, ModuleScope.BOTH] }, tenantId: null },
-      { tenantId },
-    ];
+    where.OR = [{ scope: { in: [ModuleScope.VENDOR, ModuleScope.BOTH] }, tenantId: null }, { tenantId }];
   }
 
   return await prisma.appRole.findMany({
@@ -651,10 +648,7 @@ const assignStaffPermissions = async (
 
     // STRICT: Vendors cannot delegate permissions for ADMIN-only resources
     if (perm.scope === ModuleScope.ADMIN) {
-      throw new AppError(
-        status.FORBIDDEN,
-        `Forbidden: Cannot delegate platform admin-only permission '${perm.key}'`,
-      );
+      throw new AppError(status.FORBIDDEN, `Forbidden: Cannot delegate platform admin-only permission '${perm.key}'`);
     }
 
     const [resource] = perm.key.split(":");
@@ -710,11 +704,7 @@ const assignStaffPermissions = async (
 /**
  * Get permissions assigned to a specific staff user
  */
-const getStaffPermissions = async (
-  staffUserId: string,
-  vendorTenantId?: string | null,
-  requesterRole?: Role,
-) => {
+const getStaffPermissions = async (staffUserId: string, vendorTenantId?: string | null, requesterRole?: Role) => {
   const staff = await prisma.user.findUnique({
     where: { id: staffUserId },
   });
@@ -724,10 +714,7 @@ const getStaffPermissions = async (
   }
 
   if (requesterRole === Role.VENDOR && staff.tenantId !== vendorTenantId) {
-    throw new AppError(
-      status.FORBIDDEN,
-      "Forbidden: You can only view permissions for staff in your own store",
-    );
+    throw new AppError(status.FORBIDDEN, "Forbidden: You can only view permissions for staff in your own store");
   }
 
   return await prisma.userPermission.findMany({
@@ -758,10 +745,7 @@ const revokeStaffPermission = async (
   }
 
   if (requesterRole === Role.VENDOR && userPerm.tenantId !== vendorTenantId) {
-    throw new AppError(
-      status.FORBIDDEN,
-      "Forbidden: You cannot modify permissions outside your store tenant",
-    );
+    throw new AppError(status.FORBIDDEN, "Forbidden: You cannot modify permissions outside your store tenant");
   }
 
   const deleted = await prisma.userPermission.delete({
@@ -777,13 +761,7 @@ const revokeStaffPermission = async (
  */
 const getMyEffectivePermissions = async (user: IRequestUser): Promise<IUserEffectivePermissions> => {
   const permissions = await PermissionManager.getUserPermissions(user.userId);
-  const categories = Array.from(
-    new Set(
-      permissions
-        .filter((p) => p.includes(":"))
-        .map((p) => p.split(":")[0]),
-    ),
-  );
+  const categories = Array.from(new Set(permissions.filter((p) => p.includes(":")).map((p) => p.split(":")[0])));
 
   return {
     userId: user.userId,

@@ -4,11 +4,7 @@ import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { IQueryParams } from "../../types/query.types";
 import { QueryBuilder } from "../../utils/QueryBuilder";
-import {
-  standardWishlistInclude,
-  wishlistFilterableFields,
-  wishlistSearchableFields,
-} from "./wishlist.constant";
+import { standardWishlistInclude, wishlistFilterableFields, wishlistSearchableFields } from "./wishlist.constant";
 import {
   IAddToWishlistPayload,
   ICheckWishlistResult,
@@ -48,10 +44,7 @@ const addToWishlist = async (userId: string, payload: IAddToWishlistPayload) => 
   });
 };
 
-const toggleWishlist = async (
-  userId: string,
-  payload: IAddToWishlistPayload,
-): Promise<IToggleWishlistResult> => {
+const toggleWishlist = async (userId: string, payload: IAddToWishlistPayload): Promise<IToggleWishlistResult> => {
   const product = await prisma.product.findUnique({
     where: { id: payload.productId },
     select: { id: true, title: true },
@@ -111,10 +104,7 @@ const getMyWishlist = async (userId: string, queryParams: IQueryParams) => {
   return await wishlistQuery.execute();
 };
 
-const checkProductInWishlist = async (
-  userId: string,
-  productId: string,
-): Promise<ICheckWishlistResult> => {
+const checkProductInWishlist = async (userId: string, productId: string): Promise<ICheckWishlistResult> => {
   const existing = await prisma.wishlist.findUnique({
     where: {
       userId_productId: {

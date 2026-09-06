@@ -18,69 +18,41 @@ router.get("/me/permissions", checkAuth(), RbacController.getMyEffectivePermissi
 // ============================================================
 
 // Seed System Permissions
-router.post(
-  "/admin/seed",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.seedSystemPermissions,
-);
+router.post("/admin/seed", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.seedSystemPermissions);
 
 // Permissions Registry (Admin)
-router.get(
-  "/admin/permissions",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.getAllPermissions,
-);
+router.get("/admin/permissions", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.getAllPermissions);
 router.post(
   "/admin/permissions",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(RbacValidation.createPermissionSchema),
   RbacController.createPermission,
 );
-router.get(
-  "/admin/permissions/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.getPermissionById,
-);
+router.get("/admin/permissions/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.getPermissionById);
 router.patch(
   "/admin/permissions/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(RbacValidation.updatePermissionSchema),
   RbacController.updatePermission,
 );
-router.delete(
-  "/admin/permissions/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.deletePermission,
-);
+router.delete("/admin/permissions/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.deletePermission);
 
 // Roles Registry (Admin)
-router.get(
-  "/admin/roles",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.getAllRoles,
-);
+router.get("/admin/roles", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.getAllRoles);
 router.post(
   "/admin/roles",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(RbacValidation.createRoleSchema),
   RbacController.createRole,
 );
-router.get(
-  "/admin/roles/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.getRoleById,
-);
+router.get("/admin/roles/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.getRoleById);
 router.patch(
   "/admin/roles/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(RbacValidation.updateRoleSchema),
   RbacController.updateRole,
 );
-router.delete(
-  "/admin/roles/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  RbacController.deleteRole,
-);
+router.delete("/admin/roles/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), RbacController.deleteRole);
 
 // Assign Roles to Users
 router.post(
@@ -116,11 +88,7 @@ router.post(
 );
 
 // List staff members for vendor store
-router.get(
-  "/vendor/staff",
-  checkAuth(Role.VENDOR),
-  RbacController.getVendorStaffList,
-);
+router.get("/vendor/staff", checkAuth(Role.VENDOR), RbacController.getVendorStaffList);
 
 // Delegate granular permissions to staff member
 router.post(

@@ -41,10 +41,7 @@ const getMyWishlist = catchAsync(async (req: Request, res: Response) => {
 });
 
 const checkProductInWishlist = catchAsync(async (req: Request, res: Response) => {
-  const result = await WishlistService.checkProductInWishlist(
-    req.user.userId,
-    req.params.productId as string,
-  );
+  const result = await WishlistService.checkProductInWishlist(req.user.userId, req.params.productId as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -55,10 +52,7 @@ const checkProductInWishlist = catchAsync(async (req: Request, res: Response) =>
 });
 
 const removeFromWishlist = catchAsync(async (req: Request, res: Response) => {
-  const result = await WishlistService.removeFromWishlist(
-    req.user.userId,
-    req.params.id as string,
-  );
+  const result = await WishlistService.removeFromWishlist(req.user.userId, req.params.id as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -69,10 +63,7 @@ const removeFromWishlist = catchAsync(async (req: Request, res: Response) => {
 });
 
 const removeByProductId = catchAsync(async (req: Request, res: Response) => {
-  const result = await WishlistService.removeByProductId(
-    req.user.userId,
-    req.params.productId as string,
-  );
+  const result = await WishlistService.removeByProductId(req.user.userId, req.params.productId as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -94,9 +85,7 @@ const clearWishlist = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getProductWishlistCount = catchAsync(async (req: Request, res: Response) => {
-  const result = await WishlistService.getProductWishlistCount(
-    req.params.productId as string,
-  );
+  const result = await WishlistService.getProductWishlistCount(req.params.productId as string);
 
   sendResponse(res, {
     statusCode: status.OK,

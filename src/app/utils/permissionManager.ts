@@ -414,10 +414,7 @@ export class PermissionManager {
 
         const hasPerm = await PermissionManager.hasPermission(user.userId, normalizedReq);
         if (!hasPerm) {
-          throw new AppError(
-            status.FORBIDDEN,
-            `Forbidden: You lack the required permission '${requiredPermission}'.`,
-          );
+          throw new AppError(status.FORBIDDEN, `Forbidden: You lack the required permission '${requiredPermission}'.`);
         }
 
         next();
@@ -440,10 +437,7 @@ export class PermissionManager {
 
         const hasAny = await PermissionManager.hasAnyPermission(user.userId, permissions);
         if (!hasAny) {
-          throw new AppError(
-            status.FORBIDDEN,
-            `Forbidden: You require at least one of [${permissions.join(", ")}]`,
-          );
+          throw new AppError(status.FORBIDDEN, `Forbidden: You require at least one of [${permissions.join(", ")}]`);
         }
 
         next();
@@ -466,10 +460,7 @@ export class PermissionManager {
 
         const hasAll = await PermissionManager.hasAllPermissions(user.userId, permissions);
         if (!hasAll) {
-          throw new AppError(
-            status.FORBIDDEN,
-            `Forbidden: You must have all permissions: [${permissions.join(", ")}]`,
-          );
+          throw new AppError(status.FORBIDDEN, `Forbidden: You must have all permissions: [${permissions.join(", ")}]`);
         }
 
         next();
@@ -530,10 +521,7 @@ export class PermissionManager {
 
         const hasPerm = await PermissionManager.hasPermission(user.userId, normalizedReq);
         if (!hasPerm) {
-          throw new AppError(
-            status.FORBIDDEN,
-            `Forbidden: Your account lacks '${requiredPermission}' for your store.`,
-          );
+          throw new AppError(status.FORBIDDEN, `Forbidden: Your account lacks '${requiredPermission}' for your store.`);
         }
 
         next();
