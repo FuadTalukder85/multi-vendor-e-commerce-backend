@@ -67,9 +67,7 @@ const createVendorStaffSchema = z.object({
 
 const assignStaffPermissionsSchema = z.object({
   staffUserId: z.string().min(1, "Staff user ID is required"),
-  permissions: z
-    .array(z.string().min(1))
-    .min(1, "At least one permission must be provided"),
+  permissions: z.array(z.string().min(1)).min(1, "At least one permission must be provided"),
 });
 
 export const RbacValidation = {

@@ -25,6 +25,7 @@ model VendorProfile {
   documents VendorDocument[]
   products  Product[]
   subOrders SubOrder[]
+  coupons   Coupon[]
 
   @@index([status])
   @@map("vendor_profiles")

@@ -1,12 +1,6 @@
 export const wishlistSearchableFields = ["product.title", "product.brand", "product.slug"];
 
-export const wishlistFilterableFields = [
-  "searchTerm",
-  "productId",
-  "userId",
-  "product.categoryId",
-  "product.status",
-];
+export const wishlistFilterableFields = ["searchTerm", "productId", "userId", "product.categoryId", "product.status"];
 
 export const standardWishlistInclude = {
   product: {

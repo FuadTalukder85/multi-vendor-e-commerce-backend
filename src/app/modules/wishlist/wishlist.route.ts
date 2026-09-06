@@ -39,11 +39,7 @@ router.delete("/product/:productId", checkAuth(), WishlistController.removeByPro
 router.get("/product/:productId/count", optionalAuth, WishlistController.getProductWishlistCount);
 
 // Admin route: list and inspect all wishlists across the platform
-router.get(
-  "/admin/all",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  WishlistController.getAllWishlists,
-);
+router.get("/admin/all", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), WishlistController.getAllWishlists);
 
 // Delete wishlist item by wishlist ID (or product ID)
 router.delete("/:id", checkAuth(), WishlistController.removeFromWishlist);

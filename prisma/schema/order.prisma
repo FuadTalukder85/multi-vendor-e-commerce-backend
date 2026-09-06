@@ -18,9 +18,10 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  customer        User       @relation(fields: [customerId], references: [id])
-  shippingAddress Address?   @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  customer        User             @relation(fields: [customerId], references: [id])
+  shippingAddress Address?         @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
   subOrders       SubOrder[]
+  couponUsageLogs CouponUsageLog[]
 
   @@index([customerId])
   @@index([paymentStatus])

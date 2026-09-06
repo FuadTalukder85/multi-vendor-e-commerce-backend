@@ -185,11 +185,7 @@ const getVendorStaffList = catchAsync(async (req: Request, res: Response) => {
 });
 
 const assignStaffPermissions = catchAsync(async (req: Request, res: Response) => {
-  const result = await RbacService.assignStaffPermissions(
-    req.user.userId,
-    req.user.tenantId,
-    req.body,
-  );
+  const result = await RbacService.assignStaffPermissions(req.user.userId, req.user.tenantId, req.body);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -215,11 +211,7 @@ const getStaffPermissions = catchAsync(async (req: Request, res: Response) => {
 });
 
 const revokeStaffPermission = catchAsync(async (req: Request, res: Response) => {
-  const result = await RbacService.revokeStaffPermission(
-    req.params.id as string,
-    req.user.tenantId,
-    req.user.role,
-  );
+  const result = await RbacService.revokeStaffPermission(req.params.id as string, req.user.tenantId, req.user.role);
 
   sendResponse(res, {
     statusCode: status.OK,
