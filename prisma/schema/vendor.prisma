@@ -24,6 +24,7 @@ model VendorProfile {
   owner     User             @relation("VendorOwner", fields: [userId], references: [id], onDelete: Cascade)
   documents VendorDocument[]
   products  Product[]
+  subOrders SubOrder[]
 
   @@index([status])
   @@map("vendor_profiles")

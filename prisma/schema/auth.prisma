@@ -35,6 +35,7 @@ model User {
   assignedPermissions UserPermission[]     @relation("UserPermissionAssignedBy")
   assignedRolePerms   RolePermission[]     @relation("RolePermissionAssignedBy")
   wishlists           Wishlist[]
+  orders              Order[]
 
   @@index([role])
   @@index([status])

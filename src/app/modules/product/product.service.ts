@@ -332,6 +332,13 @@ const updateProduct = async (user: IRequestUser, id: string, payload: IUpdatePro
     }
   }
 
+  if (payload.status !== undefined) {
+    const isAdmin = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+    if (!isAdmin && payload.status === ProductStatus.REJECTED) {
+      throw new AppError(status.FORBIDDEN, "Only admins can set product status to REJECTED");
+    }
+  }
+
   let slug = product.slug;
   if (payload.slug || payload.title) {
     slug = await generateUniqueSlug(payload.slug || payload.title!, id);
@@ -350,6 +357,7 @@ const updateProduct = async (user: IRequestUser, id: string, payload: IUpdatePro
       ...(payload.discountPrice !== undefined && { discountPrice: payload.discountPrice }),
       ...(payload.totalStock !== undefined && { totalStock: payload.totalStock }),
       ...(payload.tags !== undefined && { tags: payload.tags }),
+      ...(payload.status !== undefined && { status: payload.status }),
     },
     include: standardProductInclude,
   });
