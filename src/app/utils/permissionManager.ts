@@ -25,7 +25,13 @@ const normalizeResource = (resource: string): string => {
   if (lower === "categories") return "category";
   if (lower === "orders") return "order";
   if (lower === "coupons") return "coupon";
-  if (lower === "payouts") return "payout";
+  if (
+    lower === "payouts" ||
+    lower === "payout-sub-orders" ||
+    lower === "payout-sub-order" ||
+    lower === "payout_sub_orders"
+  )
+    return "payout";
   if (lower === "users") return "user";
   return lower;
 };

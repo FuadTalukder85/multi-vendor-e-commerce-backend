@@ -263,6 +263,13 @@ export const SYSTEM_PERMISSIONS: ISystemPermission[] = [
     description: "Request earnings withdrawal to bank account or Stripe",
   },
   {
+    key: "payout:update",
+    name: "Update/Process Payout",
+    category: "payout",
+    scope: ModuleScope.BOTH,
+    description: "Approve, process, mark paid/failed, or manage payout sub-orders",
+  },
+  {
     key: "payout:export",
     name: "Export Payouts",
     category: "payout",

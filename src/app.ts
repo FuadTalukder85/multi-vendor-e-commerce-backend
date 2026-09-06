@@ -33,8 +33,17 @@ app.use(
 // Better Auth handler (before body parsers)
 app.use("/api/auth", toNodeHandler(auth));
 
-// Body parsers
-app.use(express.json());
+// Body parsers (capturing rawBody for webhook signature verification)
+app.use(
+  express.json({
+    verify: (req: Request, _res: Response, buf: Buffer) => {
+      if (req.originalUrl.includes("/stripe/webhook")) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (req as any).rawBody = buf;
+      }
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
