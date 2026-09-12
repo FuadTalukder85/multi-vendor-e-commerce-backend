@@ -9,4 +9,55 @@ enum UserStatus {
   ACTIVE
   BLOCKED
   DELETED
+  SUSPENDED
+  BANNED
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  OUT_OF_STOCK
+  REJECTED
+}
+
+enum ModuleScope {
+  ADMIN
+  VENDOR
+  BOTH
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum SubOrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PayoutStatus {
+  UNPAID
+  PROCESSING
+  PAID
+  FAILED
+}
+
+enum ReviewFraudStatus {
+  CLEAN
+  FLAGGED
+  REMOVED
 }

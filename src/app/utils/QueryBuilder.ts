@@ -18,7 +18,7 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
   private skip: number = 0;
   private sortBy: string = "createdAt";
   private sortOrder: "asc" | "desc" = "desc";
-  private selectFields: Record<string, boolean> | undefined;
+  private selectFields: Record<string, boolean | Record<string, unknown>> | undefined;
 
   constructor(
     private model: PrismaModelDelegate,
@@ -120,8 +120,7 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
         return;
       }
 
-      const isAllowedField =
-        !filterableFields || filterableFields.length === 0 || filterableFields.includes(key);
+      const isAllowedField = !filterableFields || filterableFields.length === 0 || filterableFields.includes(key);
 
       if (key.includes(".")) {
         const parts = key.split(".");
@@ -272,6 +271,13 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
     return this;
   }
 
+  select(fields: Record<string, boolean | Record<string, unknown>>): this {
+    this.selectFields = fields;
+    this.query.select = fields;
+    delete this.query.include;
+    return this;
+  }
+
   include(relation: TInclude): this {
     if (this.selectFields) {
       return this;
@@ -330,8 +336,10 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
   }
 
   async execute(): Promise<IQueryResult<T>> {
+    const cleanCountQuery = { where: this.countQuery.where };
+
     const [total, data] = await Promise.all([
-      this.model.count(this.countQuery as Parameters<typeof this.model.count>[0]),
+      this.model.count(cleanCountQuery as Parameters<typeof this.model.count>[0]),
       this.model.findMany(this.query as Parameters<typeof this.model.findMany>[0]),
     ]);
 

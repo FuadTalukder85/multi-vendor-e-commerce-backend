@@ -51,6 +51,36 @@ export const auth = betterAuth({
         required: false,
         defaultValue: null,
       },
+      phone: {
+        type: "string",
+        required: false,
+      },
+      tenantId: {
+        type: "string",
+        required: false,
+      },
+      isOwner: {
+        type: "boolean",
+        required: false,
+        defaultValue: true,
+      },
+      isSuperAdmin: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+      },
+      createdById: {
+        type: "string",
+        required: false,
+      },
+      lastLoginAt: {
+        type: "date",
+        required: false,
+      },
+      lastLoginIp: {
+        type: "string",
+        required: false,
+      },
     },
   },
 

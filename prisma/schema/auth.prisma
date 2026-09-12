@@ -1,22 +1,48 @@
 model User {
-  id                 String     @id
-  name               String
-  email              String
-  emailVerified      Boolean    @default(false)
-  role               Role       @default(CUSTOMER)
-  status             UserStatus @default(ACTIVE)
-  needPasswordChange Boolean    @default(false)
-  isDeleted          Boolean    @default(false)
-  deletedAt          DateTime?
-  image              String?
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-  sessions           Session[]
-  accounts           Account[]
+  id            String     @id @default(cuid())
+  name          String
+  email         String     @unique
+  emailVerified Boolean    @default(false)
+  image         String?
+  role          Role       @default(CUSTOMER)
+  phone         String?
+  status        UserStatus @default(ACTIVE)
 
-  @@unique([email])
+  // Multi-tenant isolation
+  tenantId     String?
+  isOwner      Boolean @default(true)
+  isSuperAdmin Boolean @default(false)
+  createdById  String?
+  createdBy    User?   @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers User[]  @relation("UserCreatedBy")
+
+  lastLoginAt DateTime?
+  lastLoginIp String?
+
+  needPasswordChange Boolean   @default(false)
+  isDeleted          Boolean   @default(false)
+  deletedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sessions            Session[]
+  accounts            Account[]
+  addresses           Address[]
+  vendorProfile       VendorProfile?       @relation("VendorOwner")
+  userRoles           UserRole[]           @relation("UserRoles")
+  assignedUserRoles   UserRole[]           @relation("UserRoleAssignedBy")
+  userPermissions     UserPermission[]     @relation("UserPermissions")
+  assignedPermissions UserPermission[]     @relation("UserPermissionAssignedBy")
+  assignedRolePerms   RolePermission[]     @relation("RolePermissionAssignedBy")
+  wishlists           Wishlist[]
+  orders              Order[]
+  couponUsageLogs     CouponUsageLog[]
+  reviews             Review[]
+  notifications       Notification[]
+
   @@index([role])
   @@index([status])
+  @@index([tenantId, role])
   @@map("user")
 }
 
@@ -49,6 +75,7 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
+  issuer                String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
