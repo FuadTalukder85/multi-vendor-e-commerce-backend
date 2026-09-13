@@ -1,0 +1,32 @@
+model DeviceFingerprint {
+  id          String   @id @default(cuid())
+  deviceId    String   @unique // client fingerprint hash
+  ipAddress   String
+  flagged     Boolean  @default(false)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @updatedAt
+
+  linkedUsers DeviceFingerprintUser[]
+
+  @@index([ipAddress])
+  @@index([flagged])
+  @@map("device_fingerprints")
+}
+
+model DeviceFingerprintUser {
+  id                  String   @id @default(cuid())
+  deviceFingerprintId String
+  userId              String
+  address             String?
+  phone               String?
+  paymentFingerprint  String?
+  firstSeenAt         DateTime @default(now())
+  lastSeenAt          DateTime @updatedAt
+
+  device DeviceFingerprint @relation(fields: [deviceFingerprintId], references: [id], onDelete: Cascade)
+  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceFingerprintId, userId])
+  @@index([userId])
+  @@map("device_fingerprint_users")
+}
