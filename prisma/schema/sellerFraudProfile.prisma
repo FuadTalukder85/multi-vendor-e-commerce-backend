@@ -1,0 +1,25 @@
+model SellerFraudProfile {
+  id       String @id @default(cuid())
+  vendorId String @unique
+
+  totalOrders        Int     @default(0)
+  cancelledOrders    Int     @default(0)
+  returnedOrders     Int     @default(0)
+  complaints         Int     @default(0)
+  refundRate         Decimal @default(0) @db.Decimal(5, 2)
+  fakeProductReports Int     @default(0)
+  lateShipmentRate   Decimal @default(0) @db.Decimal(5, 2)
+  customerRating     Decimal @default(0) @db.Decimal(3, 2)
+  reviewAbuseCount   Int     @default(0)
+  suspiciousOrders   Int     @default(0)
+
+  riskScore Int       @default(0)
+  riskLevel RiskLevel @default(LOW)
+  flaggedAt DateTime?
+  updatedAt DateTime  @updatedAt
+
+  vendor VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([riskLevel])
+  @@map("seller_fraud_profiles")
+}
