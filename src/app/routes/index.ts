@@ -14,6 +14,7 @@ import { ProductRoutes } from "../modules/product/product.route";
 import { ProductVariantRoutes } from "../modules/productVariant/productVariant.route";
 import { RbacRoutes } from "../modules/rbac/rbac.route";
 import { ReviewRoutes } from "../modules/review/review.route";
+import { ReviewFraudLogRoutes } from "../modules/reviewFraudLog/reviewFraudLog.route";
 import { SellerFraudProfileRoutes } from "../modules/sellerFraudProfile/sellerFraudProfile.route";
 import { SubOrderRoutes } from "../modules/subOrder/subOrder.route";
 import { UserRoutes } from "../modules/user/user.route";
@@ -41,6 +42,7 @@ router.use("/payout-sub-orders", PayoutSubOrderRoutes);
 router.use("/wishlists", WishlistRoutes);
 router.use("/rbac", RbacRoutes);
 router.use("/reviews", ReviewRoutes);
+router.use("/review-fraud-logs", ReviewFraudLogRoutes);
 router.use("/notifications", NotificationRoutes);
 
 export const IndexRoutes = router;
