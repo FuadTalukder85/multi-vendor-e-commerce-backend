@@ -1,0 +1,16 @@
+model FraudAuditLog {
+  id              String   @id @default(cuid())
+  targetUserId    String   // user (or vendor's owner user) being flagged
+  triggerType     String   // "multi_account", "coupon_abuse", "seller_risk", "fake_review", ...
+  reasonSummary   String
+  metricsSnapshot Json     // frozen metrics at time of flagging
+  scoreAtEvent    Int
+  action          String   // "flagged", "order_hold", "auto_suspend", "manual_review"
+  createdAt       DateTime @default(now())
+
+  targetUser User @relation("FraudAuditTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([targetUserId])
+  @@index([triggerType])
+  @@map("fraud_audit_logs")
+}

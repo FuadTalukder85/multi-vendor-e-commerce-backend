@@ -61,3 +61,11 @@ enum ReviewFraudStatus {
   FLAGGED
   REMOVED
 }
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
