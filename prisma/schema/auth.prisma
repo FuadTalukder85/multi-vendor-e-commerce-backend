@@ -39,6 +39,9 @@ model User {
   couponUsageLogs     CouponUsageLog[]
   reviews             Review[]
   notifications       Notification[]
+  deviceLinks         DeviceFingerprintUser[]
+  fraudProfile        FraudProfile?
+  fraudAuditLogs      FraudAuditLog[]         @relation("FraudAuditTarget")
 
   @@index([role])
   @@index([status])
