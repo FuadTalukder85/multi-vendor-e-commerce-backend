@@ -18,6 +18,7 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().min(1),
   CLOUDINARY_API_SECRET: z.string().min(1),
   CLIENT_URL: z.string().url(),
+  VENDOR_CLIENT_URL: z.string().url().optional().default("http://localhost:3000"),
   STRIPE_SECRET_KEY: z.string().optional().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
   STRIPE_CURRENCY: z.string().optional().default("usd"),
@@ -51,6 +52,7 @@ export const envVars = Object.freeze({
     API_SECRET: parsed.data.CLOUDINARY_API_SECRET,
   },
   CLIENT_URL: parsed.data.CLIENT_URL,
+  VENDOR_CLIENT_URL: parsed.data.VENDOR_CLIENT_URL,
   STRIPE: {
     SECRET_KEY: parsed.data.STRIPE_SECRET_KEY,
     WEBHOOK_SECRET: parsed.data.STRIPE_WEBHOOK_SECRET,
