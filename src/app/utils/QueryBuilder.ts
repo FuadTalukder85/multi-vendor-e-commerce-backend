@@ -39,16 +39,45 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
   }
 
   search(): this {
-    const { searchTerm } = this.queryParams;
+    const rawSearchTerm =
+      this.queryParams.searchTerm ||
+      this.queryParams.search ||
+      this.queryParams.q ||
+      this.queryParams.query ||
+      this.queryParams.keyword;
+
+    const searchTerm = typeof rawSearchTerm === "string" ? rawSearchTerm.trim() : undefined;
     const { searchableFields } = this.config;
 
     if (searchTerm && searchableFields && searchableFields.length > 0) {
       const searchConditions: Record<string, unknown>[] = searchableFields.map((field) => {
+        if (field === "tags") {
+          return {
+            tags: {
+              has: searchTerm,
+            },
+          };
+        }
+
         if (field.includes(".")) {
           const parts = field.split(".");
 
           if (parts.length === 2) {
             const [relation, nestedField] = parts;
+
+            if (relation === "variants") {
+              return {
+                variants: {
+                  some: {
+                    [nestedField]: {
+                      contains: searchTerm,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                },
+              };
+            }
+
             const stringFilter: PrismaStringFilter = {
               contains: searchTerm,
               mode: "insensitive" as const,
@@ -100,7 +129,21 @@ export class QueryBuilder<T, TWhereInput = Record<string, unknown>, TInclude = R
 
   filter(): this {
     const { filterableFields } = this.config;
-    const excludedField = ["searchTerm", "page", "limit", "sortBy", "sortOrder", "fields", "include"];
+    const excludedField = [
+      "searchTerm",
+      "search",
+      "q",
+      "query",
+      "keyword",
+      "page",
+      "limit",
+      "sortBy",
+      "sortOrder",
+      "fields",
+      "include",
+      "minPrice",
+      "maxPrice",
+    ];
 
     const filterParams: Record<string, unknown> = {};
 

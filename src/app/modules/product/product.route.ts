@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
+import { multerUpload } from "../../config/multer.config";
 import { checkAuth, optionalAuth } from "../../middlewares/auth.middleware";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { PermissionManager } from "../../utils/permissionManager";
@@ -7,6 +8,15 @@ import { ProductController } from "./product.controller";
 import { ProductValidation } from "./product.validation";
 
 const router = Router();
+
+// Upload product image files to Cloudinary via Multer
+router.post(
+  "/upload-images",
+  checkAuth(Role.VENDOR, Role.ADMIN, Role.SUPER_ADMIN),
+  PermissionManager.requireVendorPermission("product:create"),
+  multerUpload.array("images", 10),
+  ProductController.uploadProductImages,
+);
 
 // Vendor self-service products list
 router.get(
