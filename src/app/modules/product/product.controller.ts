@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import status from "http-status";
+import AppError from "../../errors/AppError";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { ProductService } from "./product.service";
@@ -105,6 +106,24 @@ const updateProductStatus = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+const uploadProductImages = catchAsync(async (req: Request, res: Response) => {
+  const files = (req.files as Express.Multer.File[]) || (req.file ? [req.file as Express.Multer.File] : []);
+
+  if (!files || files.length === 0) {
+    throw new AppError(status.BAD_REQUEST, "No image files provided for upload");
+  }
+
+  const urls = files.map((file) => file.path);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Images uploaded successfully",
+    data: { urls },
+  });
+});
+
 export const ProductController = {
   createProduct,
   getAllProductsPublic,
@@ -115,4 +134,5 @@ export const ProductController = {
   updateProduct,
   deleteProduct,
   updateProductStatus,
+  uploadProductImages,
 };
