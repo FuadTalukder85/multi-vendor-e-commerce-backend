@@ -127,7 +127,7 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [envVars.BETTER_AUTH_URL, envVars.CLIENT_URL],
+  trustedOrigins: [envVars.BETTER_AUTH_URL, envVars.CLIENT_URL, envVars.VENDOR_CLIENT_URL],
 
   advanced: {
     useSecureCookies: envVars.NODE_ENV === "production",
