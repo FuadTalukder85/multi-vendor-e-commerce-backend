@@ -9,6 +9,7 @@ import { IQueryParams, IQueryResult } from "../../types/query.types";
 import { IRequestUser } from "../../types/request.types";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import {
+  adminProductSearchableFields,
   productFilterableFields,
   productListInclude,
   productListSelect,
@@ -236,7 +237,7 @@ const getMyVendorProducts = async (user: IRequestUser, queryParams: IQueryParams
 
 const getAllProductsAdmin = async (queryParams: IQueryParams) => {
   const productQuery = new QueryBuilder<ProductModel>(prisma.product, queryParams, {
-    searchableFields: productSearchableFields,
+    searchableFields: adminProductSearchableFields,
     filterableFields: productFilterableFields,
   })
     .search()
