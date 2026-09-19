@@ -8,6 +8,14 @@ export const productSearchableFields = [
   "tags",
 ];
 
+// Lean searchable fields for admin list — avoids expensive full-table scans on
+// unindexed text columns (description, slug) and correlated subqueries (variants.sku).
+// Matches the admin table's visible columns and search placeholder.
+export const adminProductSearchableFields = [
+  "title",
+  "brand",
+];
+
 export const productFilterableFields = [
   "searchTerm",
   "categoryId",

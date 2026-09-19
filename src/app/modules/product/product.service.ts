@@ -9,6 +9,7 @@ import { IQueryParams, IQueryResult } from "../../types/query.types";
 import { IRequestUser } from "../../types/request.types";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import {
+  adminProductSearchableFields,
   productFilterableFields,
   productListInclude,
   productListSelect,
@@ -172,7 +173,46 @@ const getAllProductsPublic = async (queryParams: IQueryParams): Promise<IQueryRe
     return cachedResult;
   }
 
-  const { minPrice, maxPrice, ...otherParams } = queryParams;
+  const { minPrice, maxPrice, category, categoryId, ...otherParams } = queryParams;
+
+  const targetCategoryParam = categoryId || category;
+  let categoryIdsToFilter: string[] | undefined;
+
+  if (targetCategoryParam && typeof targetCategoryParam === "string" && targetCategoryParam !== "all") {
+    // Resolve category by ID or by slug, including all child subcategories
+    const matchedCategory = await prisma.category.findFirst({
+      where: {
+        OR: [
+          { id: targetCategoryParam },
+          { slug: targetCategoryParam.toLowerCase() },
+        ],
+      },
+      select: {
+        id: true,
+        children: {
+          select: {
+            id: true,
+            children: {
+              select: { id: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (matchedCategory) {
+      const allIds = [matchedCategory.id];
+      matchedCategory.children?.forEach((child) => {
+        allIds.push(child.id);
+        child.children?.forEach((grandChild) => {
+          allIds.push(grandChild.id);
+        });
+      });
+      categoryIdsToFilter = allIds;
+    } else {
+      categoryIdsToFilter = [targetCategoryParam];
+    }
+  }
 
   const productQuery = new QueryBuilder<Record<string, unknown>>(prisma.product, otherParams, {
     searchableFields: productSearchableFields,
@@ -189,6 +229,15 @@ const getAllProductsPublic = async (queryParams: IQueryParams): Promise<IQueryRe
     .sort()
     .paginate()
     .select(productListSelect);
+
+  // Apply resolved category filter
+  if (categoryIdsToFilter && categoryIdsToFilter.length > 0) {
+    if (categoryIdsToFilter.length === 1) {
+      productQuery.where({ categoryId: categoryIdsToFilter[0] });
+    } else {
+      productQuery.where({ categoryId: { in: categoryIdsToFilter } });
+    }
+  }
 
   // Price range filters
   if (minPrice !== undefined || maxPrice !== undefined) {
@@ -236,7 +285,7 @@ const getMyVendorProducts = async (user: IRequestUser, queryParams: IQueryParams
 
 const getAllProductsAdmin = async (queryParams: IQueryParams) => {
   const productQuery = new QueryBuilder<ProductModel>(prisma.product, queryParams, {
-    searchableFields: productSearchableFields,
+    searchableFields: adminProductSearchableFields,
     filterableFields: productFilterableFields,
   })
     .search()
