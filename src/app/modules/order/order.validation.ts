@@ -7,13 +7,25 @@ const createOrderItemSchema = z.object({
   quantity: z.number().int().positive("Quantity must be a positive integer"),
 });
 
-const createOrderSchema = z.object({
-  items: z.array(createOrderItemSchema).min(1, "At least one item is required to place an order"),
-  shippingAddressId: z.string().optional(),
-  paymentMethod: z.string().optional(),
-  paymentIntentId: z.string().optional(),
-  couponCode: z.string().optional(),
-});
+const createOrderSchema = z
+  .object({
+    items: z.array(createOrderItemSchema).optional(),
+    selectedCartItemIds: z
+      .array(z.string().min(1, "Cart Item ID cannot be empty"))
+      .min(1, "At least one cart item ID must be selected")
+      .optional(),
+    shippingAddressId: z.string().optional(),
+    paymentMethod: z.string().optional(),
+    paymentIntentId: z.string().optional(),
+    couponCode: z.string().optional(),
+  })
+  .refine(
+    (data) => (data.items && data.items.length > 0) || (data.selectedCartItemIds && data.selectedCartItemIds.length > 0),
+    {
+      message: "Either selectedCartItemIds or items array must be provided to place an order",
+      path: ["items"],
+    },
+  );
 
 const updatePaymentStatusSchema = z.object({
   paymentStatus: z.nativeEnum(PaymentStatus, {

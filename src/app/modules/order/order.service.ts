@@ -24,7 +24,32 @@ const generateOrderNumber = (): string => {
 };
 
 const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => {
-  if (!payload.items || payload.items.length === 0) {
+  let orderItemsToProcess = payload.items;
+
+  // 1. If selectedCartItemIds provided, resolve from user's CartItem database records
+  if (payload.selectedCartItemIds && payload.selectedCartItemIds.length > 0) {
+    const cartItems = await prisma.cartItem.findMany({
+      where: {
+        id: { in: payload.selectedCartItemIds },
+        userId: user.userId,
+      },
+    });
+
+    if (cartItems.length !== payload.selectedCartItemIds.length) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "One or more selected cart items were not found or do not belong to your account",
+      );
+    }
+
+    orderItemsToProcess = cartItems.map((ci) => ({
+      productId: ci.productId,
+      variantId: ci.variantId || undefined,
+      quantity: ci.quantity,
+    }));
+  }
+
+  if (!orderItemsToProcess || orderItemsToProcess.length === 0) {
     throw new AppError(status.BAD_REQUEST, "Order must contain at least one item");
   }
 
@@ -42,8 +67,8 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
     }
   }
 
-  // Fetch unique product IDs
-  const productIds = Array.from(new Set(payload.items.map((i) => i.productId)));
+  // Fetch unique product IDs from DB (never trust frontend prices or vendors)
+  const productIds = Array.from(new Set(orderItemsToProcess.map((i) => i.productId)));
   const products = await prisma.product.findMany({
     where: {
       id: { in: productIds },
@@ -74,7 +99,7 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
 
   const processedItems: IProcessedItem[] = [];
 
-  for (const item of payload.items) {
+  for (const item of orderItemsToProcess) {
     const product = productMap.get(item.productId);
 
     if (!product) {
@@ -196,30 +221,61 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
 
   const orderNumber = generateOrderNumber();
 
-  // Execute database transaction: deduct inventory & create Order, SubOrders, OrderItems, CouponUsageLog
+  // Execute database transaction: atomic stock decrement, create Order, SubOrders, OrderItems, CouponUsageLog, & clean up selected cart items
   return await prisma.$transaction(async (tx) => {
-    // 1. Deduct stock
+    // 1. Concurrency-safe atomic stock decrement
     for (const item of processedItems) {
       if (item.variantId) {
-        await tx.productVariant.update({
-          where: { id: item.variantId },
+        const variantUpdate = await tx.productVariant.updateMany({
+          where: {
+            id: item.variantId,
+            stock: { gte: item.quantity },
+          },
           data: {
             stock: { decrement: item.quantity },
           },
         });
-        await tx.product.update({
-          where: { id: item.productId },
+
+        if (variantUpdate.count === 0) {
+          throw new AppError(
+            status.BAD_REQUEST,
+            `Insufficient stock for "${item.name}". Stock was changed or exhausted by another order.`,
+          );
+        }
+
+        const productUpdate = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            totalStock: { gte: item.quantity },
+          },
           data: {
             totalStock: { decrement: item.quantity },
           },
         });
+
+        if (productUpdate.count === 0) {
+          throw new AppError(
+            status.BAD_REQUEST,
+            `Insufficient total stock for product "${item.name}".`,
+          );
+        }
       } else {
-        await tx.product.update({
-          where: { id: item.productId },
+        const productUpdate = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            totalStock: { gte: item.quantity },
+          },
           data: {
             totalStock: { decrement: item.quantity },
           },
         });
+
+        if (productUpdate.count === 0) {
+          throw new AppError(
+            status.BAD_REQUEST,
+            `Insufficient stock for product "${item.name}". Stock was changed or exhausted by another order.`,
+          );
+        }
       }
     }
 
@@ -269,6 +325,16 @@ const createOrder = async (user: IRequestUser, payload: ICreateOrderPayload) => 
         },
         tx,
       );
+    }
+
+    // 4. Cart Cleanup: Remove ONLY the selected items from the user's cart (unselected remain untouched)
+    if (payload.selectedCartItemIds && payload.selectedCartItemIds.length > 0) {
+      await tx.cartItem.deleteMany({
+        where: {
+          id: { in: payload.selectedCartItemIds },
+          userId: user.userId,
+        },
+      });
     }
 
     return createdOrder;
