@@ -9,6 +9,7 @@ import { FraudAuditLogRoutes } from "../modules/fraudAuditLog/fraudAuditLog.rout
 import { FraudProfileRoutes } from "../modules/fraudProfile/fraudProfile.route";
 import { NotificationRoutes } from "../modules/notification/notification.route";
 import { OrderRoutes } from "../modules/order/order.route";
+import { CartRoutes } from "../modules/cart/cart.route";
 import { PayoutRoutes } from "../modules/payout/payout.route";
 import { PayoutSubOrderRoutes } from "../modules/payoutSubOrder/payoutSubOrder.route";
 import { ProductRoutes } from "../modules/product/product.route";
@@ -38,6 +39,7 @@ router.use("/fraud-profiles", FraudProfileRoutes);
 router.use("/fraud-audit-logs", FraudAuditLogRoutes);
 router.use("/seller-fraud-profiles", SellerFraudProfileRoutes);
 router.use("/orders", OrderRoutes);
+router.use("/cart", CartRoutes);
 router.use("/sub-orders", SubOrderRoutes);
 router.use("/payouts", PayoutRoutes);
 router.use("/payout-sub-orders", PayoutSubOrderRoutes);

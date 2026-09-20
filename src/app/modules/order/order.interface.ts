@@ -7,10 +7,18 @@ export interface ICreateOrderItemPayload {
 }
 
 export interface ICreateOrderPayload {
-  items: ICreateOrderItemPayload[];
+  items?: ICreateOrderItemPayload[];
+  selectedCartItemIds?: string[];
   shippingAddressId?: string;
   paymentMethod?: string;
   paymentIntentId?: string;
+  couponCode?: string;
+}
+
+export interface ICreatePaymentIntentPayload {
+  items?: ICreateOrderItemPayload[];
+  selectedCartItemIds?: string[];
+  shippingAddressId?: string;
   couponCode?: string;
 }
 

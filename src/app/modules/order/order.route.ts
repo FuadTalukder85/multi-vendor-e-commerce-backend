@@ -12,6 +12,14 @@ const router = Router();
 // CUSTOMER ORDER ROUTES
 // ==========================================
 
+// Create Stripe PaymentIntent for checkout
+router.post(
+  "/create-payment-intent",
+  checkAuth(),
+  validateRequest(OrderValidation.createPaymentIntentSchema),
+  OrderController.createPaymentIntent,
+);
+
 // Create new multi-vendor order
 router.post("/", checkAuth(), validateRequest(OrderValidation.createOrderSchema), OrderController.createOrder);
 

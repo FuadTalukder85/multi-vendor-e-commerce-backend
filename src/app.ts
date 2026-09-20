@@ -30,13 +30,35 @@ app.use((req: Request, res: Response, next) => {
   next();
 });
 
-// CORS
+// CORS configuration driven purely by environment variables
+const allowedOrigins = [
+  envVars.CLIENT_URL,
+  envVars.VENDOR_CLIENT_URL,
+  envVars.ADMIN_CLIENT_URL,
+  envVars.BETTER_AUTH_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: [envVars.CLIENT_URL, envVars.VENDOR_CLIENT_URL, envVars.ADMIN_CLIENT_URL, envVars.BETTER_AUTH_URL],
+    origin: (origin, callback) => {
+      // Allow server-to-server or tools with no origin header (like mobile apps, Stripe webhooks, curl)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Client-Timestamp", "X-Requested-With", "Accept"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Client-Timestamp",
+      "X-Requested-With",
+      "Accept",
+      "x-session-id",
+      "X-Session-Id",
+    ],
   }),
 );
 

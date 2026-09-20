@@ -4,6 +4,7 @@ import AppError from "../errors/AppError";
 import { envVars } from "./env";
 
 let stripeClient: Stripe | null = null;
+let currentKey = "";
 
 export const getStripeClient = (): Stripe => {
   if (!envVars.STRIPE.SECRET_KEY || envVars.STRIPE.SECRET_KEY.includes("placeholder")) {
@@ -13,7 +14,8 @@ export const getStripeClient = (): Stripe => {
     );
   }
 
-  if (!stripeClient) {
+  if (!stripeClient || currentKey !== envVars.STRIPE.SECRET_KEY) {
+    currentKey = envVars.STRIPE.SECRET_KEY;
     stripeClient = new Stripe(envVars.STRIPE.SECRET_KEY, {
       typescript: true,
     });
