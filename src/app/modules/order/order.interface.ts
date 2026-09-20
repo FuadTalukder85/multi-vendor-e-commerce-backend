@@ -15,6 +15,13 @@ export interface ICreateOrderPayload {
   couponCode?: string;
 }
 
+export interface ICreatePaymentIntentPayload {
+  items?: ICreateOrderItemPayload[];
+  selectedCartItemIds?: string[];
+  shippingAddressId?: string;
+  couponCode?: string;
+}
+
 export interface IUpdatePaymentStatusPayload {
   paymentStatus: PaymentStatus;
   paymentIntentId?: string;
