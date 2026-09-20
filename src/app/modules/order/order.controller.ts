@@ -4,6 +4,17 @@ import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { OrderService } from "./order.service";
 
+const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
+  const result = await OrderService.createPaymentIntent(req.user, req.body);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Payment intent created successfully",
+    data: result,
+  });
+});
+
 const createOrder = catchAsync(async (req: Request, res: Response) => {
   const result = await OrderService.createOrder(req.user, req.body);
 
@@ -84,6 +95,7 @@ const updatePaymentStatusAdmin = catchAsync(async (req: Request, res: Response) 
 });
 
 export const OrderController = {
+  createPaymentIntent,
   createOrder,
   getMyOrders,
   getMyOrderById,

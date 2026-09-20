@@ -21,6 +21,7 @@ const envSchema = z.object({
   VENDOR_CLIENT_URL: z.string().url().optional().default("http://localhost:3001"),
   ADMIN_CLIENT_URL: z.string().url().optional().default("http://localhost:3002"),
   STRIPE_SECRET_KEY: z.string().optional().default(""),
+  STRIPE_PUBLISHABLE_KEY: z.string().optional().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
   STRIPE_CURRENCY: z.string().optional().default("usd"),
   REDIS_URL: z.string().optional().default("redis://127.0.0.1:6379"),
@@ -57,6 +58,7 @@ export const envVars = Object.freeze({
   ADMIN_CLIENT_URL: parsed.data.ADMIN_CLIENT_URL,
   STRIPE: {
     SECRET_KEY: parsed.data.STRIPE_SECRET_KEY,
+    PUBLISHABLE_KEY: parsed.data.STRIPE_PUBLISHABLE_KEY,
     WEBHOOK_SECRET: parsed.data.STRIPE_WEBHOOK_SECRET,
     CURRENCY: parsed.data.STRIPE_CURRENCY,
   },

@@ -42,6 +42,7 @@ model User {
   deviceLinks         DeviceFingerprintUser[]
   fraudProfile        FraudProfile?
   fraudAuditLogs      FraudAuditLog[]         @relation("FraudAuditTarget")
+  cartItems           CartItem[]
 
   @@index([role])
   @@index([status])
