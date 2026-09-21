@@ -450,22 +450,78 @@ const updateProduct = async (user: IRequestUser, id: string, payload: IUpdatePro
     slug = await generateUniqueSlug(payload.slug || payload.title!, id);
   }
 
-  const updatedProduct = await prisma.product.update({
-    where: { id },
-    data: {
-      ...(payload.title !== undefined && { title: payload.title }),
-      slug,
-      ...(payload.description !== undefined && { description: payload.description }),
-      ...(payload.categoryId !== undefined && { categoryId: payload.categoryId }),
-      ...(payload.brand !== undefined && { brand: payload.brand }),
-      ...(payload.images !== undefined && { images: payload.images }),
-      ...(payload.basePrice !== undefined && { basePrice: payload.basePrice }),
-      ...(payload.discountPrice !== undefined && { discountPrice: payload.discountPrice }),
-      ...(payload.totalStock !== undefined && { totalStock: payload.totalStock }),
-      ...(payload.tags !== undefined && { tags: payload.tags }),
-      ...(payload.status !== undefined && { status: payload.status }),
-    },
-    include: standardProductInclude,
+  // Validate variant SKUs if variants provided
+  if (payload.variants !== undefined && payload.variants.length > 0) {
+    const skus = payload.variants.map((v) => v.sku);
+    const uniqueSkus = new Set(skus);
+    if (uniqueSkus.size !== skus.length) {
+      throw new AppError(status.BAD_REQUEST, "Duplicate SKUs provided in variant list");
+    }
+
+    const existingVariants = await prisma.productVariant.findMany({
+      where: {
+        sku: { in: skus },
+        productId: { not: id }, // Exclude variants belonging to this product
+      },
+      select: { sku: true },
+    });
+
+    if (existingVariants.length > 0) {
+      throw new AppError(
+        status.CONFLICT,
+        `SKU already exists in another product: ${existingVariants.map((v) => v.sku).join(", ")}`
+      );
+    }
+  }
+
+  // Calculate totalStock if variants provided or payload specifies it
+  let resolvedTotalStock = payload.totalStock !== undefined ? payload.totalStock : product.totalStock;
+  if (payload.variants !== undefined) {
+    if (payload.variants.length > 0) {
+      resolvedTotalStock = payload.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+    }
+  }
+
+  const updatedProduct = await prisma.$transaction(async (tx) => {
+    // If variants array is explicitly passed, sync variants
+    if (payload.variants !== undefined) {
+      // Remove all existing variants for this product
+      await tx.productVariant.deleteMany({
+        where: { productId: id },
+      });
+
+      // Insert new variants if any provided
+      if (payload.variants.length > 0) {
+        await tx.productVariant.createMany({
+          data: payload.variants.map((v) => ({
+            productId: id,
+            sku: v.sku,
+            attributes: (v.attributes || {}) as InputJsonValue,
+            price: v.price,
+            stock: v.stock ?? 0,
+            image: v.image || null,
+          })),
+        });
+      }
+    }
+
+    return await tx.product.update({
+      where: { id },
+      data: {
+        ...(payload.title !== undefined && { title: payload.title }),
+        slug,
+        ...(payload.description !== undefined && { description: payload.description }),
+        ...(payload.categoryId !== undefined && { categoryId: payload.categoryId }),
+        ...(payload.brand !== undefined && { brand: payload.brand }),
+        ...(payload.images !== undefined && { images: payload.images }),
+        ...(payload.basePrice !== undefined && { basePrice: payload.basePrice }),
+        ...(payload.discountPrice !== undefined && { discountPrice: payload.discountPrice }),
+        totalStock: resolvedTotalStock,
+        ...(payload.tags !== undefined && { tags: payload.tags }),
+        ...(payload.status !== undefined && { status: payload.status }),
+      },
+      include: standardProductInclude,
+    });
   });
 
   await invalidatePattern("products:public:*");
