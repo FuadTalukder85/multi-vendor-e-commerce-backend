@@ -22,6 +22,7 @@ import { SubOrderRoutes } from "../modules/subOrder/subOrder.route";
 import { UserRoutes } from "../modules/user/user.route";
 import { VendorProfileRoutes } from "../modules/vendorProfile/vendorProfile.route";
 import { WishlistRoutes } from "../modules/wishlist/wishlist.route";
+import { DealRoutes } from "../modules/deal/deal.route";
 
 const router = Router();
 
@@ -48,5 +49,6 @@ router.use("/rbac", RbacRoutes);
 router.use("/reviews", ReviewRoutes);
 router.use("/review-fraud-logs", ReviewFraudLogRoutes);
 router.use("/notifications", NotificationRoutes);
+router.use("/deals", DealRoutes);
 
 export const IndexRoutes = router;
