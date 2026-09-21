@@ -33,6 +33,7 @@ export interface IUpdateProductPayload {
   totalStock?: number;
   tags?: string[];
   status?: ProductStatus;
+  variants?: ICreateVariantPayload[];
 }
 
 export interface IUpdateProductStatusPayload {

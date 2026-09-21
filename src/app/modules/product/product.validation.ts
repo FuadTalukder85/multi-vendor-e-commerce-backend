@@ -47,6 +47,7 @@ const updateProductSchema = z
     totalStock: z.number().int().nonnegative("Stock cannot be negative").optional(),
     tags: z.array(z.string()).optional(),
     status: z.nativeEnum(ProductStatus, { message: "Invalid product status" }).optional(),
+    variants: z.array(createVariantSchema).optional(),
   })
   .refine(
     (data) => {
