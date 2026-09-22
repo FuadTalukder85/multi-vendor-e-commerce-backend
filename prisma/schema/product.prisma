@@ -16,6 +16,7 @@ model Product {
   ratingAvg   Decimal       @default(0) @db.Decimal(3, 2)
   ratingCount Int           @default(0)
   tags        String[]
+  imageEmbedding Float[]    @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

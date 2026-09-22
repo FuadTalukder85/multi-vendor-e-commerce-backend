@@ -21,7 +21,8 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "seed:1m": "tsx scripts/seed-1m-products.ts",
     "test:load": "tsx scripts/load-test.ts",
-    "stripe:listen": "node scripts/stripe-listen.mjs"
+    "stripe:listen": "node scripts/stripe-listen.mjs",
+    "sync:embeddings": "tsx scripts/sync-image-embeddings.ts"
   },
   "keywords": [
     "e-commerce",

@@ -17,6 +17,7 @@ import {
   standardProductInclude,
 } from "./product.constant";
 import { ICreateProductPayload, IUpdateProductPayload, IUpdateProductStatusPayload } from "./product.interface";
+import { generateImageEmbeddingFromUrl } from "../../utils/imageEmbedding";
 
 const slugify = (text: string): string => {
   return text
@@ -128,6 +129,15 @@ const createProduct = async (user: IRequestUser, payload: ICreateProductPayload)
     totalStock = payload.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
   }
 
+  let imageEmbedding: number[] = [];
+  if (payload.images && payload.images.length > 0 && payload.images[0]) {
+    try {
+      imageEmbedding = await generateImageEmbeddingFromUrl(payload.images[0]);
+    } catch (err) {
+      console.warn("Failed to generate image embedding on create:", err);
+    }
+  }
+
   return await prisma.$transaction(async (tx) => {
     const createdProduct = await tx.product.create({
       data: {
@@ -138,6 +148,7 @@ const createProduct = async (user: IRequestUser, payload: ICreateProductPayload)
         categoryId: payload.categoryId || null,
         brand: payload.brand || null,
         images: payload.images || [],
+        imageEmbedding,
         basePrice: payload.basePrice,
         discountPrice: payload.discountPrice || null,
         totalStock,
@@ -482,6 +493,19 @@ const updateProduct = async (user: IRequestUser, id: string, payload: IUpdatePro
     }
   }
 
+  let updatedEmbedding: number[] | undefined = undefined;
+  if (payload.images !== undefined) {
+    if (payload.images.length > 0 && payload.images[0]) {
+      try {
+        updatedEmbedding = await generateImageEmbeddingFromUrl(payload.images[0]);
+      } catch (err) {
+        console.warn("Failed to generate image embedding on update:", err);
+      }
+    } else {
+      updatedEmbedding = [];
+    }
+  }
+
   const updatedProduct = await prisma.$transaction(async (tx) => {
     // If variants array is explicitly passed, sync variants
     if (payload.variants !== undefined) {
@@ -514,6 +538,7 @@ const updateProduct = async (user: IRequestUser, id: string, payload: IUpdatePro
         ...(payload.categoryId !== undefined && { categoryId: payload.categoryId }),
         ...(payload.brand !== undefined && { brand: payload.brand }),
         ...(payload.images !== undefined && { images: payload.images }),
+        ...(updatedEmbedding !== undefined && { imageEmbedding: updatedEmbedding }),
         ...(payload.basePrice !== undefined && { basePrice: payload.basePrice }),
         ...(payload.discountPrice !== undefined && { discountPrice: payload.discountPrice }),
         totalStock: resolvedTotalStock,
