@@ -5,6 +5,8 @@ import { validateRequest } from "../../middlewares/validateRequest";
 import { VendorProfileController } from "./vendorProfile.controller";
 import { VendorProfileValidation } from "./vendorProfile.validation";
 
+import { multerUpload } from "../../config/multer.config";
+
 const router = Router();
 
 // Vendor self-service routes
@@ -21,6 +23,13 @@ router.patch(
   validateRequest(VendorProfileValidation.updateVendorProfileSchema),
   VendorProfileController.updateMyVendorProfile,
 );
+
+// Vendor media management (Cloudinary via Multer)
+router.post("/me/logo", checkAuth(), multerUpload.single("image"), VendorProfileController.uploadStoreLogo);
+router.delete("/me/logo", checkAuth(), VendorProfileController.deleteStoreLogo);
+router.post("/me/banner", checkAuth(), multerUpload.single("image"), VendorProfileController.uploadStoreBanner);
+router.delete("/me/banner", checkAuth(), VendorProfileController.deleteStoreBanner);
+router.post("/me/documents", checkAuth(), multerUpload.single("file"), VendorProfileController.uploadMyDocument);
 
 // Documents
 router.post(

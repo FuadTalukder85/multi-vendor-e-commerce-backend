@@ -1,3 +1,6 @@
+import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
+import { fromNodeHeaders } from "better-auth/node";
+import { IncomingHttpHeaders } from "http";
 import status from "http-status";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
 import { UserModel } from "../../../generated/prisma/models";
@@ -265,9 +268,160 @@ const deleteUser = async (id: string) => {
   return deletedUser;
 };
 
+const uploadAvatar = async (userId: string, fileUrl: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId, isDeleted: false },
+  });
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User profile not found");
+  }
+
+  // If previous image was on Cloudinary, safely delete it
+  if (user.image && user.image.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(user.image);
+    } catch {
+      // Ignore background cleanup failure
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { image: fileUrl },
+    include: {
+      addresses: {
+        orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+      },
+    },
+  });
+
+  return updatedUser;
+};
+
+const deleteAvatar = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId, isDeleted: false },
+  });
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User profile not found");
+  }
+
+  if (user.image && user.image.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(user.image);
+    } catch {
+      // Ignore
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { image: null },
+    include: {
+      addresses: {
+        orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+      },
+    },
+  });
+
+  return updatedUser;
+};
+
+const changePassword = async (
+  userId: string,
+  payload: { currentPassword: string; newPassword: string; revokeOtherSessions?: boolean },
+  headers: IncomingHttpHeaders,
+) => {
+  try {
+    const authHeaders = fromNodeHeaders(headers);
+    const result = await auth.api.changePassword({
+      body: {
+        currentPassword: payload.currentPassword,
+        newPassword: payload.newPassword,
+        revokeOtherSessions: payload.revokeOtherSessions ?? false,
+      },
+      headers: authHeaders,
+    });
+
+    return result || { success: true, message: "Password updated successfully" };
+  } catch (err: unknown) {
+    if (err instanceof AppError) throw err;
+    const message = err instanceof Error ? err.message : "Failed to change password. Please verify current password.";
+    throw new AppError(status.BAD_REQUEST, message);
+  }
+};
+
+const getActiveSessions = async (userId: string, currentToken?: string) => {
+  const sessions = await prisma.session.findMany({
+    where: {
+      userId,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      token: true,
+      ipAddress: true,
+      userAgent: true,
+      createdAt: true,
+      expiresAt: true,
+    },
+  });
+
+  return sessions.map((s) => ({
+    id: s.id,
+    ipAddress: s.ipAddress,
+    userAgent: s.userAgent,
+    createdAt: s.createdAt,
+    expiresAt: s.expiresAt,
+    isCurrent: currentToken ? s.token === currentToken : false,
+  }));
+};
+
+const revokeSession = async (userId: string, sessionId: string) => {
+  const session = await prisma.session.findFirst({
+    where: { id: sessionId, userId },
+  });
+
+  if (!session) {
+    throw new AppError(status.NOT_FOUND, "Session not found or already expired");
+  }
+
+  await prisma.session.delete({
+    where: { id: sessionId },
+  });
+
+  return { success: true, message: "Session revoked successfully" };
+};
+
+const revokeOtherSessions = async (userId: string, currentToken?: string) => {
+  if (currentToken) {
+    await prisma.session.deleteMany({
+      where: {
+        userId,
+        token: { not: currentToken },
+      },
+    });
+  } else {
+    await prisma.session.deleteMany({
+      where: { userId },
+    });
+  }
+
+  return { success: true, message: "All other sessions revoked successfully" };
+};
+
 export const UserService = {
   getMe,
   updateMe,
+  uploadAvatar,
+  deleteAvatar,
+  changePassword,
+  getActiveSessions,
+  revokeSession,
+  revokeOtherSessions,
   getAllUsers,
   getUserById,
   createUser,
