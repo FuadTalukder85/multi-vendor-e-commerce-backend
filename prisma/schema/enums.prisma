@@ -69,3 +69,17 @@ enum RiskLevel {
   CRITICAL
 }
 
+enum DealStatus {
+  SCHEDULED
+  ACTIVE
+  EXPIRED
+  SOLD_OUT
+  CANCELLED
+}
+
+enum DealRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}

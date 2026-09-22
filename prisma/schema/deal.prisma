@@ -1,0 +1,69 @@
+model Deal {
+  id        String  @id @default(cuid())
+  productId String
+  variantId String?
+  vendorId  String
+
+  title         String? // "Flash Sale — 40% Off Today Only" (optional custom label)
+  dealPrice     Decimal @db.Decimal(10, 2)
+  originalPrice Decimal @db.Decimal(10, 2) // snapshot at creation — badge "was $X"
+
+  quantityLimit  Int? // total units allocated to deal
+  soldCount      Int  @default(0)
+  maxPerCustomer Int? // max limit per single customer order
+
+  startAt DateTime
+  endAt   DateTime
+  status  DealStatus @default(SCHEDULED)
+
+  createdById String // vendor or admin user ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product    Product         @relation(fields: [productId], references: [id])
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
+  vendor     VendorProfile   @relation(fields: [vendorId], references: [id])
+  orderItems OrderItem[]
+  request    DealRequest?
+
+  @@index([status, startAt, endAt])
+  @@index([productId])
+  @@index([vendorId])
+  @@map("deals")
+}
+
+model DealRequest {
+  id            String  @id @default(cuid())
+  productId     String
+  variantId     String?
+  vendorId      String
+  requestedById String // vendor user who submitted request
+
+  proposedDealPrice Decimal  @db.Decimal(10, 2)
+  requestedStartAt  DateTime
+  requestedEndAt    DateTime
+  quantityLimit     Int?
+  maxPerCustomer    Int?
+  note              String? // vendor's pitch
+
+  status       DealRequestStatus @default(PENDING)
+  reviewedById String? // admin who reviewed
+  reviewNote   String? // rejection/approval notes
+  reviewedAt   DateTime?
+
+  dealId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product         @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+  vendor  VendorProfile   @relation(fields: [vendorId], references: [id])
+  deal    Deal?           @relation(fields: [dealId], references: [id])
+
+  @@index([status])
+  @@index([vendorId])
+  @@index([productId])
+  @@map("deal_requests")
+}

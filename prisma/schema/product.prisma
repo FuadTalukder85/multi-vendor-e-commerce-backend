@@ -16,6 +16,7 @@ model Product {
   ratingAvg   Decimal       @default(0) @db.Decimal(3, 2)
   ratingCount Int           @default(0)
   tags        String[]
+  imageEmbedding Float[]    @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,6 +29,8 @@ model Product {
   reviews         Review[]
   reviewFraudLogs ReviewFraudLog[]
   cartItems       CartItem[]
+  deals           Deal[]
+  dealRequests    DealRequest[]
 
   @@index([vendorId, status])
   @@index([categoryId])
@@ -47,9 +50,11 @@ model ProductVariant {
   stock      Int     @default(0)
   image      String?
 
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  orderItems OrderItem[]
-  cartItems  CartItem[]
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
+  cartItems    CartItem[]
+  deals        Deal[]
+  dealRequests DealRequest[]
 
   @@index([productId])
   @@map("product_variants")

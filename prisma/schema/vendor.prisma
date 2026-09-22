@@ -28,6 +28,8 @@ model VendorProfile {
   payouts            Payout[]
   coupons            Coupon[]
   sellerFraudProfile SellerFraudProfile?
+  deals              Deal[]
+  dealRequests       DealRequest[]
 
   @@index([status])
   @@map("vendor_profiles")
