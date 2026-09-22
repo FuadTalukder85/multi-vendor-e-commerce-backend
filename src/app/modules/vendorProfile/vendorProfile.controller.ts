@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import status from "http-status";
+import AppError from "../../errors/AppError";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { VendorProfileService } from "./vendorProfile.service";
@@ -121,10 +122,86 @@ const deleteDocument = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const uploadStoreLogo = catchAsync(async (req: Request, res: Response) => {
+  const file = req.file as Express.Multer.File;
+  if (!file || !file.path) {
+    throw new AppError(status.BAD_REQUEST, "No image file provided for store logo upload");
+  }
+
+  const result = await VendorProfileService.uploadStoreLogo(req.user.userId, file.path);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Store logo uploaded successfully",
+    data: result,
+  });
+});
+
+const deleteStoreLogo = catchAsync(async (req: Request, res: Response) => {
+  const result = await VendorProfileService.deleteStoreLogo(req.user.userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Store logo removed successfully",
+    data: result,
+  });
+});
+
+const uploadStoreBanner = catchAsync(async (req: Request, res: Response) => {
+  const file = req.file as Express.Multer.File;
+  if (!file || !file.path) {
+    throw new AppError(status.BAD_REQUEST, "No image file provided for store banner upload");
+  }
+
+  const result = await VendorProfileService.uploadStoreBanner(req.user.userId, file.path);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Store banner uploaded successfully",
+    data: result,
+  });
+});
+
+const deleteStoreBanner = catchAsync(async (req: Request, res: Response) => {
+  const result = await VendorProfileService.deleteStoreBanner(req.user.userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Store banner removed successfully",
+    data: result,
+  });
+});
+
+const uploadMyDocument = catchAsync(async (req: Request, res: Response) => {
+  const file = req.file as Express.Multer.File;
+  if (!file || !file.path) {
+    throw new AppError(status.BAD_REQUEST, "No document file provided for upload");
+  }
+
+  const type = (req.body.type as string) || "legal_document";
+  const result = await VendorProfileService.uploadMyDocument(req.user.userId, type, file.path);
+
+  sendResponse(res, {
+    statusCode: status.CREATED,
+    success: true,
+    message: "Document uploaded successfully",
+    data: result,
+  });
+});
+
 export const VendorProfileController = {
   applyVendorProfile,
   getMyVendorProfile,
   updateMyVendorProfile,
+  uploadStoreLogo,
+  deleteStoreLogo,
+  uploadStoreBanner,
+  deleteStoreBanner,
+  uploadMyDocument,
   getAllVendorsPublic,
   getVendorBySlug,
   getAllVendorsAdmin,
