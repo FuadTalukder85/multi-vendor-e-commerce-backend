@@ -56,6 +56,7 @@ export interface IUserEffectivePermissions {
   role: string;
   isOwner: boolean;
   tenantId?: string | null;
+  assignedRoles?: string[];
   permissions: string[];
   categories: string[];
 }

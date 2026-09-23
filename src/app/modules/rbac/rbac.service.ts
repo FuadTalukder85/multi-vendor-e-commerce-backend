@@ -763,11 +763,18 @@ const getMyEffectivePermissions = async (user: IRequestUser): Promise<IUserEffec
   const permissions = await PermissionManager.getUserPermissions(user.userId);
   const categories = Array.from(new Set(permissions.filter((p) => p.includes(":")).map((p) => p.split(":")[0])));
 
+  const userRoles = await prisma.userRole.findMany({
+    where: { userId: user.userId, isActive: true },
+    include: { role: true },
+  });
+  const assignedRoles = userRoles.map((ur) => ur.role.name);
+
   return {
     userId: user.userId,
     role: user.role,
     isOwner: Boolean(user.isOwner),
     tenantId: user.tenantId,
+    assignedRoles,
     permissions,
     categories,
   };

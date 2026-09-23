@@ -19,6 +19,12 @@ const getMe = async (userId: string) => {
       addresses: {
         orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
       },
+      userRoles: {
+        where: { isActive: true },
+        include: {
+          role: true,
+        },
+      },
     },
   });
 
@@ -49,6 +55,12 @@ const updateMe = async (userId: string, payload: IUpdateMePayload) => {
       addresses: {
         orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
       },
+      userRoles: {
+        where: { isActive: true },
+        include: {
+          role: true,
+        },
+      },
     },
   });
 
@@ -66,6 +78,12 @@ const getAllUsers = async (queryParams: IQueryParams) => {
     .paginate()
     .include({
       addresses: true,
+      userRoles: {
+        where: { isActive: true },
+        include: {
+          role: true,
+        },
+      },
       createdBy: {
         select: {
           id: true,
@@ -85,6 +103,12 @@ const getUserById = async (id: string) => {
     include: {
       addresses: {
         orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+      },
+      userRoles: {
+        where: { isActive: true },
+        include: {
+          role: true,
+        },
       },
       createdBy: {
         select: {
