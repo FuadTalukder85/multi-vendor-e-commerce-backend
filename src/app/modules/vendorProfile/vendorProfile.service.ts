@@ -1,6 +1,7 @@
 import status from "http-status";
 import { Role, VendorStatus } from "../../../generated/prisma/enums";
 import { VendorProfileModel } from "../../../generated/prisma/models";
+import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
 import AppError from "../../errors/AppError";
 import { prisma } from "../../lib/prisma";
 import { IQueryParams } from "../../types/query.types";
@@ -338,6 +339,15 @@ const deleteDocument = async (userId: string, docId: string, userRole: Role) => 
     throw new AppError(status.FORBIDDEN, "You do not have permission to delete this document");
   }
 
+  // Cleanup Cloudinary file if applicable
+  if (document.url && document.url.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(document.url);
+    } catch {
+      // Ignore
+    }
+  }
+
   const deletedDoc = await prisma.vendorDocument.delete({
     where: { id: docId },
   });
@@ -345,10 +355,139 @@ const deleteDocument = async (userId: string, docId: string, userRole: Role) => 
   return deletedDoc;
 };
 
+const uploadStoreLogo = async (userId: string, fileUrl: string) => {
+  const profile = await prisma.vendorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!profile) {
+    throw new AppError(status.NOT_FOUND, "Vendor profile not found");
+  }
+
+  if (profile.storeLogo && profile.storeLogo.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(profile.storeLogo);
+    } catch {
+      // Ignore
+    }
+  }
+
+  const updatedProfile = await prisma.vendorProfile.update({
+    where: { id: profile.id },
+    data: { storeLogo: fileUrl },
+    include: protectedVendorInclude,
+  });
+
+  return updatedProfile;
+};
+
+const deleteStoreLogo = async (userId: string) => {
+  const profile = await prisma.vendorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!profile) {
+    throw new AppError(status.NOT_FOUND, "Vendor profile not found");
+  }
+
+  if (profile.storeLogo && profile.storeLogo.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(profile.storeLogo);
+    } catch {
+      // Ignore
+    }
+  }
+
+  const updatedProfile = await prisma.vendorProfile.update({
+    where: { id: profile.id },
+    data: { storeLogo: null },
+    include: protectedVendorInclude,
+  });
+
+  return updatedProfile;
+};
+
+const uploadStoreBanner = async (userId: string, fileUrl: string) => {
+  const profile = await prisma.vendorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!profile) {
+    throw new AppError(status.NOT_FOUND, "Vendor profile not found");
+  }
+
+  if (profile.storeBanner && profile.storeBanner.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(profile.storeBanner);
+    } catch {
+      // Ignore
+    }
+  }
+
+  const updatedProfile = await prisma.vendorProfile.update({
+    where: { id: profile.id },
+    data: { storeBanner: fileUrl },
+    include: protectedVendorInclude,
+  });
+
+  return updatedProfile;
+};
+
+const deleteStoreBanner = async (userId: string) => {
+  const profile = await prisma.vendorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!profile) {
+    throw new AppError(status.NOT_FOUND, "Vendor profile not found");
+  }
+
+  if (profile.storeBanner && profile.storeBanner.includes("cloudinary.com")) {
+    try {
+      await deleteFileFromCloudinary(profile.storeBanner);
+    } catch {
+      // Ignore
+    }
+  }
+
+  const updatedProfile = await prisma.vendorProfile.update({
+    where: { id: profile.id },
+    data: { storeBanner: null },
+    include: protectedVendorInclude,
+  });
+
+  return updatedProfile;
+};
+
+const uploadMyDocument = async (userId: string, type: string, fileUrl: string) => {
+  const profile = await prisma.vendorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!profile) {
+    throw new AppError(status.NOT_FOUND, "Vendor profile not found");
+  }
+
+  const document = await prisma.vendorDocument.create({
+    data: {
+      vendorId: profile.id,
+      type,
+      url: fileUrl,
+    },
+  });
+
+  return document;
+};
+
 export const VendorProfileService = {
   applyVendorProfile,
   getMyVendorProfile,
   updateMyVendorProfile,
+  uploadStoreLogo,
+  deleteStoreLogo,
+  uploadStoreBanner,
+  deleteStoreBanner,
+  uploadMyDocument,
   getAllVendorsPublic,
   getVendorBySlug,
   getAllVendorsAdmin,

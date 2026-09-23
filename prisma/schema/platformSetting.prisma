@@ -1,0 +1,18 @@
+model PlatformSetting {
+  id                      String   @id @default("global")
+  platformName            String   @default("Vexlora Marketplace")
+  supportEmail            String   @default("support@vexlora.com")
+  supportPhone            String?  @default("+1 (555) 019-2834")
+  currency                String   @default("USD")
+  defaultCommissionRate   Decimal  @default(10.0) @db.Decimal(5, 2)
+  minPayoutAmount         Decimal  @default(50.0) @db.Decimal(10, 2)
+  escrowHoldDays          Int      @default(7)
+  allowVendorRegistration Boolean  @default(true)
+  maintenanceMode         Boolean  @default(false)
+  emailNotifications      Boolean  @default(true)
+  systemAlerts            Boolean  @default(true)
+  updatedAt               DateTime @updatedAt
+  createdAt               DateTime @default(now())
+
+  @@map("platform_settings")
+}
