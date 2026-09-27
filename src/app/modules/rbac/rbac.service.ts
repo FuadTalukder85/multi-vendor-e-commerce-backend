@@ -157,11 +157,13 @@ const deletePermission = async (id: string) => {
 /**
  * Get all roles
  */
-const getAllRoles = async (userRole: Role, tenantId?: string | null) => {
+const getAllRoles = async (userRole: Role, tenantId?: string | null, scopeQuery?: string) => {
   const where: Record<string, unknown> = { isActive: true };
 
   if (userRole === Role.VENDOR) {
     where.OR = [{ scope: { in: [ModuleScope.VENDOR, ModuleScope.BOTH] }, tenantId: null }, { tenantId }];
+  } else if (scopeQuery && Object.values(ModuleScope).includes(scopeQuery as ModuleScope)) {
+    where.scope = { in: [scopeQuery, ModuleScope.BOTH] };
   }
 
   return await prisma.appRole.findMany({
@@ -355,6 +357,15 @@ const assignRoleToUser = async (payload: IAssignUserRolePayload, assignedById?: 
     throw new AppError(status.NOT_FOUND, "Target user not found");
   }
 
+  // If roleId is "NONE" or empty, remove existing custom roles
+  if (payload.roleId === "NONE" || !payload.roleId) {
+    await prisma.userRole.deleteMany({
+      where: { userId: payload.userId },
+    });
+    PermissionManager.clearUserCache(payload.userId);
+    return null;
+  }
+
   const role = await prisma.appRole.findUnique({
     where: { id: payload.roleId },
   });
@@ -363,23 +374,36 @@ const assignRoleToUser = async (payload: IAssignUserRolePayload, assignedById?: 
     throw new AppError(status.NOT_FOUND, "Role not found");
   }
 
-  const assignment = await prisma.userRole.upsert({
+  // Validate scope compatibility strictly on the backend
+  if (role.scope !== ModuleScope.BOTH) {
+    if (role.scope === ModuleScope.VENDOR && user.role !== Role.VENDOR) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        `Cannot assign a VENDOR-scoped role to a ${user.role} user`
+      );
+    }
+    if (role.scope === ModuleScope.ADMIN && user.role !== Role.ADMIN && user.role !== Role.SUPER_ADMIN) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        `Cannot assign an ADMIN-scoped role to a ${user.role} user`
+      );
+    }
+  }
+
+  // Remove prior custom roles for this user so each user has one clean active custom RBAC role
+  await prisma.userRole.deleteMany({
     where: {
-      userId_roleId: {
-        userId: payload.userId,
-        roleId: payload.roleId,
-      },
+      userId: payload.userId,
     },
-    create: {
+  });
+
+  const assignment = await prisma.userRole.create({
+    data: {
       userId: payload.userId,
       roleId: payload.roleId,
       tenantId: payload.tenantId || user.tenantId,
       assignedById,
-    },
-    update: {
       isActive: true,
-      tenantId: payload.tenantId || user.tenantId,
-      assignedById,
     },
     include: {
       role: {

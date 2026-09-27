@@ -81,7 +81,7 @@ const deletePermission = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllRoles = catchAsync(async (req: Request, res: Response) => {
-  const result = await RbacService.getAllRoles(req.user.role, req.user.tenantId);
+  const result = await RbacService.getAllRoles(req.user.role, req.user.tenantId, req.query.scope as string);
 
   sendResponse(res, {
     statusCode: status.OK,
