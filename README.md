@@ -7,11 +7,13 @@ Production-grade multivendor e-commerce backend boilerplate built with Node.js, 
 - [Key Features](#key-features)
 - [Tech Stack](#tech-stack)
 - [⚡ **Redis Caching & Performance (High Priority)**](#-redis-caching--performance-high-priority)
+- [🏛️ System Architecture](#️-system-architecture)
+- [🗄️ Database Design (Entity Relationship Diagram)](#️-database-design-entity-relationship-diagram)
 - [Folder Structure](#folder-structure)
 - [Getting Started](#getting-started)
 - [Available Scripts](#available-scripts)
 - [API Response Format](#api-response-format)
-- [Architecture](#architecture)
+
 
 ## Key Features
 
@@ -179,11 +181,108 @@ pnpm start
 }
 ```
 
-## Architecture
+## 🏛️ System Architecture
 
-- **Modular:** Each feature is self-contained in its own module
-- **Layered:** Controller → Service → Repository pattern
-- **Type-safe:** Strict TypeScript with Zod validation
-- **Auth-ready:** Better Auth with CUSTOMER, VENDOR, ADMIN, SUPER_ADMIN roles
-- **Error-safe:** Centralized error handling (Zod, Prisma, application errors)
-- **Scalable:** QueryBuilder for complex search/filter/paginate/sort operations
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#0d1117', 'mainBkg': '#161b22', 'nodeBorder': '#30363d', 'lineColor': '#8b949e', 'textColor': '#ffffff', 'fontFamily': 'ui-sans-serif, system-ui, sans-serif' }}}%%
+flowchart TD
+    Client["Clients (Next.js Storefront / Vendor Portal / Admin Console / Mobile)"]
+    
+    API["Express 5 API – /api/v1 (Modular Monolith)<br/>TypeScript • Better-Auth Session Middleware • Fingerprint Extractor • Zod Validation"]
+
+    subgraph Modules["Domain Modules (Modular Monolith)"]
+        AuthMod["Auth & User Module<br/>Better-Auth + RBAC<br/>(CUSTOMER, VENDOR, ADMIN)"]
+        VendorMod["Vendor & Payout Module<br/>Profiles + Storefront<br/>Commissions & Payouts"]
+        CatalogMod["1M+ Product Catalog<br/>Products + Variants + Category<br/>Deals + Sub-20ms Cache"]
+        CartMod["Cart & Wishlist<br/>Multi-Vendor Cart Splitting<br/>Saved Wishlist"]
+        OrdersMod["Multi-Vendor Order Module<br/>Checkout ➔ Master Order<br/>Split into Isolated SubOrders"]
+        PaymentsMod["Payment & Stripe Module<br/>Stripe PaymentIntents +<br/>Idempotent Webhooks"]
+        FraudMod["Fraud & Risk Engine<br/>Device Fingerprinting +<br/>Sybil Reviews + Coupon Abuse"]
+        AIMod["AI Image Search Module<br/>Vector Embeddings +<br/>pgvector Cosine Search"]
+    end
+
+    Redis[("Redis 7 (IORedis)<br/>• Sub-20ms Catalog Cache<br/>• DB Fallback & Rate Limiter<br/>• Pattern Invalidation")]
+
+    Prisma["PrismaService (@prisma/adapter-pg)"]
+    Storage["Cloudinary Storage Module"]
+
+    Postgres[("PostgreSQL 17<br/>• ACID Transactions<br/>• 1M+ Composite Indexes<br/>• pgvector Embeddings")]
+    Cloudinary[("Cloudinary CDN<br/>Product Images & Media Assets")]
+
+    %% Connectors
+    Client --> API
+    
+    API --> AuthMod
+    API --> VendorMod
+    API --> CatalogMod
+    API --> CartMod
+    API --> OrdersMod
+    API --> PaymentsMod
+    API --> FraudMod
+    API --> AIMod
+    CatalogMod -.->|"Sub-20ms Cache & Rate Limit"| Redis
+
+    AuthMod --> Prisma
+    VendorMod --> Prisma
+    CatalogMod --> Prisma
+    CatalogMod --> Storage
+    CartMod --> Prisma
+    OrdersMod --> Prisma
+    PaymentsMod --> Prisma
+    FraudMod --> Prisma
+    AIMod --> Prisma
+
+    Prisma --> Postgres
+    Storage --> Cloudinary
+```
+
+> [!TIP]
+> 🎨 **Full Blueprint & Specifications**:
+> - 📄 Detailed System Documentation: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
+> - ✏️ Editable Vector File: [`architecture.drawio`](./architecture.drawio) (Import directly into [diagrams.net](https://app.diagrams.net/))
+
+---
+
+## 🗄️ Database Design (Entity Relationship Diagram)
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#0d1117', 'mainBkg': '#161b22', 'nodeBorder': '#30363d', 'lineColor': '#8b949e', 'textColor': '#ffffff', 'fontFamily': 'ui-sans-serif, system-ui, sans-serif' }}}%%
+erDiagram
+    User ||--o{ Session : "has"
+    User ||--o{ Account : "authenticates"
+    User ||--o{ Address : "owns"
+    User ||--o{ Order : "places"
+    User ||--o| VendorProfile : "manages"
+    User ||--o{ Review : "writes"
+    User ||--o{ DeviceFingerprintUser : "associated with"
+
+    VendorProfile ||--o{ VendorDocument : "verifies with"
+    VendorProfile ||--o| SellerFraudProfile : "risk profile"
+    VendorProfile ||--o{ Product : "publishes"
+    VendorProfile ||--o{ SubOrder : "fulfills"
+    VendorProfile ||--o{ Payout : "receives"
+
+    Product ||--|{ ProductVariant : "has variants"
+    Product ||--o{ Category : "belongs to"
+    Product ||--o{ Review : "rated by"
+
+    Order ||--|{ SubOrder : "split into vendor sub-orders"
+    SubOrder ||--|{ OrderItem : "contains line items"
+    OrderItem }|--|| ProductVariant : "references"
+    SubOrder ||--o| PayoutSubOrder : "linked to settlement"
+    Payout ||--|{ PayoutSubOrder : "batches"
+
+    Coupon ||--o{ CouponUsageLog : "tracks usage"
+    User ||--o{ CouponUsageLog : "redeems"
+
+    DeviceFingerprint ||--o{ DeviceFingerprintUser : "tracks devices"
+    User ||--o| FraudProfile : "monitored by"
+```
+
+### 🔑 Key Database Highlights for Recruiters
+- **Multi-Vendor Order Isolation**: Orders decompose atomically into `sub_orders` by vendor for independent status lifecycles and payout settlement.
+- **ACID Financial Integrity**: Vendor payouts (`Payout` ➔ `PayoutSubOrder`) calculate commission splits at the line-item level with transactional locking.
+- **High-Scale Indexing (1M+ Records)**: Composite indexes on high-cardinality search columns (`status`, `category_id`, `price`, `created_at`).
+- **Fraud Prevention Schema**: Multi-table risk graph linking `DeviceFingerprint`, `FraudAuditLog`, `ReviewFraudLog`, and `SellerFraudProfile`.
+
+
