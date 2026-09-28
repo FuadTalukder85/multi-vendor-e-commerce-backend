@@ -7,7 +7,8 @@
 [![Prisma](https://img.shields.io/badge/Prisma-7.3-2D3748.svg?logo=prisma)](https://www.prisma.io/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D.svg?logo=redis)](https://redis.io/)
 [![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF.svg?logo=stripe)](https://stripe.com/)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-FuadTalukder85%2Fmulti--vendor--e--commerce--backend-181717?logo=github)](https://github.com/FuadTalukder85/multi-vendor-e-commerce-backend)
+
 
 A production-grade, high-throughput multi-vendor e-commerce backend built with **Express 5**, **TypeScript**, **PostgreSQL (pgvector)**, **Prisma ORM**, and **Redis 7**. 
 
@@ -267,10 +268,11 @@ src/
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/your-username/e-commerce-backend.git
-cd e-commerce-backend
+git clone https://github.com/FuadTalukder85/multi-vendor-e-commerce-backend.git
+cd multi-vendor-e-commerce-backend
 pnpm install
 ```
+
 
 ### 2. Environment Configuration
 ```bash
@@ -369,8 +371,4 @@ All API endpoints follow a strict, standardized JSON response envelope:
 - [x] **Graceful Shutdown**: Intercepts `SIGTERM` / `SIGINT` to safely drain connection pools.
 - [x] **Idempotent Webhooks**: Stripe Event-ID deduplication preventing double charges.
 
----
 
-## 📜 License
-
-This project is licensed under the [ISC License](LICENSE).
