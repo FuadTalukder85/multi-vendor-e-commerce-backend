@@ -3,7 +3,14 @@
 This document outlines the end-to-end system architecture, design patterns, data flow, and scaling strategies for the **Multi-Vendor E-Commerce Backend**.
 
 > [!TIP]
-> 🎨 **Interactive Diagram File Available**: You can open and edit the raw diagram directly in [diagrams.net (Draw.io)](https://app.diagrams.net/) by importing [architecture.drawio](./architecture.drawio). Export it in high-resolution PNG, SVG, or PDF to share with recruiters or add to presentations!
+> 🎨 **Interactive Architecture Diagram**:
+> - ✏️ **[Download Editable Draw.io File (Google Drive)](https://drive.google.com/file/d/14d68AaZ_GSTuUge-DTK02I8edDlXh4qj/view?usp=sharing)**
+> 
+> **How to use in Draw.io:**
+> 1. Download the diagram from Google Drive.
+> 2. Open **[app.diagrams.net](https://app.diagrams.net/)**.
+> 3. Click **Open Existing Diagram** (or drag & drop the downloaded file) to view, edit, or export as PNG/PDF/SVG.
+
 
 ---
 
